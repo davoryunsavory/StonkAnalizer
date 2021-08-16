@@ -33,24 +33,29 @@ class Main {
 
     public static List<Double> diffFuction(File file, List<String> line) {
         String[] array = new String[line.size()];
+        List<Double> positive = new ArrayList<Double>();
+        List<Double> negative = new ArrayList<Double>();
         for (String lines : line) {
             array = lines.split(",");
             diffArray.add(Double.parseDouble(array[4]) - Double.parseDouble(array[1]));
         }
-        for (int i = 0; i < diffArray.size(); i++) {
-            for (int k = 0; k < 100;) {
-                if (diffArray.get(i) >= 0 && diffArray.get(i + 1) <= 0) {
-                    k++;
-                    continue;
-                } else if (diffArray.get(i) <= 0 && diffArray.get(i + 1) >= 0) {
-                    k++;
-                    continue;
-                } else {
-                    slopeArray.add(k, (slopeArray.get(k) + diffArray.get(i)) / i);
+        for (int i = 0; i < diffArray.size() - 1; i++) {
+            if (diffArray.get(i) < 0 && diffArray.get(i + 1) >= 0) {
+                negative.add(diffArray.get(i));
+                negative.add(null);
+            } else if (diffArray.get(i) >= 0 && diffArray.get(i + 1) < 0) {
+                positive.add(diffArray.get(i));
+                positive.add(null);
+            } else {
+                if (diffArray.get(i) < 0) {
+                    negative.add(diffArray.get(i));
+                } else if (diffArray.get(i) >= 0) {
+                    positive.add(diffArray.get(i));
                 }
             }
         }
-        return diffArray;
+
+        return positive;
     }
 
     public static void main(String[] args) throws Exception {

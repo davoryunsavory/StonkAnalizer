@@ -33,6 +33,8 @@ class Main {
 
     public static List<Double> diffFuction(File file, List<String> line) {
         String[] array = new String[line.size()];
+        Double runningTotalPositive = 0.0;
+        Double runningTotalNegative = 0.0;
         List<Double> positive = new ArrayList<Double>();
         List<Double> negative = new ArrayList<Double>();
         for (String lines : line) {
@@ -42,10 +44,21 @@ class Main {
         for (int i = 0; i < diffArray.size() - 1; i++) {
             if (diffArray.get(i) < 0 && diffArray.get(i + 1) >= 0) {
                 negative.add(diffArray.get(i));
-                negative.add(null);
+                for (int k = 0; k < negative.size(); k++) {
+                    runningTotalNegative = negative.get(k) + runningTotalNegative;
+                }
+                slopeArray.add(runningTotalNegative / negative.size());
+                runningTotalNegative = 0.0;
+                negative.clear();
             } else if (diffArray.get(i) >= 0 && diffArray.get(i + 1) < 0) {
+                System.out.println(positive);
                 positive.add(diffArray.get(i));
-                positive.add(null);
+                for (int k = 0; k < positive.size(); k++) {
+                    runningTotalPositive = positive.get(k) + runningTotalPositive;
+                }
+                slopeArray.add(runningTotalPositive / positive.size());
+                runningTotalPositive = 0.0;
+                positive.clear();
             } else {
                 if (diffArray.get(i) < 0) {
                     negative.add(diffArray.get(i));
@@ -55,7 +68,7 @@ class Main {
             }
         }
 
-        return positive;
+        return slopeArray;
     }
 
     public static void main(String[] args) throws Exception {

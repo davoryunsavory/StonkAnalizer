@@ -75,45 +75,44 @@ class Main {
         return slopeArray;
     }
 
-    public static Map<Integer, Double> lineFunction(File file, List<String> line) {
+    public static List<Double> lineFunction(File file, List<String> line) {
         String[] array = new String[line.size()];
         List<Double> pathArray = new ArrayList<Double>();
-        List<Double> temp = new ArrayList<Double>();
-        Map<Integer, Double> positive = new TreeMap<Integer, Double>();
-        Map<Integer, Double> negative = new TreeMap<Integer, Double>();
-        Double running = 0.0;
+        Double first = 0.0;
+        int running = 0;
+        int direction = 0;
 
         for (String lines : line) {
             array = lines.split(",");
             pathArray.add(Double.parseDouble(array[1]));
             pathArray.add(Double.parseDouble(array[4]));
         }
-
+        first = pathArray.get(0);
+        if (pathArray.get(1) - pathArray.get(0) > 0) {
+            direction = 1; // positive
+        } else {
+            direction = 0; // negative
+        }
         for (int i = 0; i < pathArray.size() - 1; i++) {
-            if (pathArray.get(i + 1) - pathArray.get(i) > 0) {
-                positive.put(i, pathArray.get(i));
-            } else if (pathArray.get(i + 1) - pathArray.get(i) < 0) {
-                negative.put(i, pathArray.get(i));
+            if (pathArray.get(i + 1) - pathArray.get(i) > 0 && direction == 0) {
+                pathArray.add(i, null);
+                direction = 1;
+            } else if (pathArray.get(i + 1) - pathArray.get(i) < 0 && direction == 1) {
+                pathArray.add(i, null);
+                direction = 0;
             }
         }
 
         for (int i = 0; i < pathArray.size(); i++) {
-            if (positive.containsKey(0)) {
-                while (positive.containsKey(i)) {
-                    running = running + positive.get(i);
-                }
-                slopeArray.add(running / i);
-                running = 0.0;
-            } else if (negative.containsKey(0)) {
-                while (negative.containsKey(i)) {
-                    running = running + negative.get(i);
-                }
-                slopeArray.add(running / i);
-                running = 0.0;
+            running += 1;
+            if (pathArray.get(i) == null) {
+                slopeArray.add((pathArray.get(i+1) - first) / running);
+                running = 0;
+                first = pathArray.get(i+1);
             }
         }
-
-        return negative;
+        System.out.println(pathArray);
+        return slopeArray;
     }
 
     public static void main(String[] args) throws Exception {

@@ -5,40 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Main {
-    private static List<Double> slopeArray = new ArrayList<Double>();
-
-    public static List<Double> lineFunction(File file, List<String> line) {
-        Double first = 0.0;
-        int running = 0;
-        int direction = 0;
-        List<Double> pathArray = getArray(file, line);
-        first = pathArray.get(0);
-        if (pathArray.get(1) - pathArray.get(0) > 0) {
-            direction = 1; // positive
-        } else {
-            direction = 0; // negative
-        }
-        for (int i = 0; i < pathArray.size() - 1; i++) {
-            if (pathArray.get(i + 1) - pathArray.get(i) > 0 && direction == 0) {
-                pathArray.add(i, null);
-                direction = 1;
-            } else if (pathArray.get(i + 1) - pathArray.get(i) < 0 && direction == 1) {
-                pathArray.add(i, null);
-                direction = 0;
-            }
-        }
-
-        for (int i = 0; i < pathArray.size(); i++) {
-            running += 1;
-            if (pathArray.get(i) == null) {
-                slopeArray.add((pathArray.get(i + 1) - first) / running);
-                running = 0;
-                first = pathArray.get(i + 1);
-            }
-        }
-        System.out.println(pathArray);
-        return slopeArray;
-    }
 
     public static List<Double> getArray(File file, List<String> line) {
         String[] array = new String[line.size()];
@@ -81,16 +47,16 @@ class Main {
         return updownArray;
     }
 
-    public static List<List<Double>> findPivots (File file, List<String> line) {
+    public static List<List<Double>> findPivots(File file, List<String> line) {
         List<List<Double>> rangeArray = findRange(file, line);
         List<List<Double>> pivotArray = new ArrayList<List<Double>>();
         List<String> updownArray = findUpDown(file, line);
         int size = rangeArray.size() - 1;
 
         for (int i = 0; i < size; i++) {
-            if (updownArray.get(i).equals("p") && updownArray.get(i+1).equals("v")) {
+            if (updownArray.get(i).equals("p") && updownArray.get(i + 1).equals("v")) {
                 pivotArray.add(rangeArray.get(i));
-            } else if (updownArray.get(i).equals("v") && updownArray.get(i+1).equals("p")) {
+            } else if (updownArray.get(i).equals("v") && updownArray.get(i + 1).equals("p")) {
                 pivotArray.add(rangeArray.get(i));
             }
         }
@@ -98,13 +64,73 @@ class Main {
         return pivotArray;
     }
 
+    public static List<Double> getDepth(File file, List<String> line, int depth) {
+        List<Double> depthSlopeArray = new ArrayList<Double>();
+        List<Integer> depthArray = new ArrayList<Integer>();
+        List<List<Double>> rangeArray = findRange(file, line);
+        List<Double> averageArray = new ArrayList<Double>();
+        int size = rangeArray.size();
+        int constantDepth = depth;
+        int running = 0;
+        int extra = 0;
+
+        for (int i = 0; i < constantDepth; i++) {
+            depth = size / depth;
+            depthArray.add(depth);
+            running = depthArray.get(i) + running;
+            depth = constantDepth;
+        }
+        extra = size - running;
+        for (int i = 0; i < depthArray.size(); i++) {
+            if (extra == 0) {
+                break;
+            } else {
+                depthArray.set(i, depthArray.get(i) + 1);
+                extra -= 1;
+            }
+
+        }
+        for (int i = 0; i < size; i++) {
+            averageArray.add((rangeArray.get(i).get(0) + rangeArray.get(i).get(1)) / 2);
+        }
+        int runningDepth = 0;
+        int runningDepthTwo = 0;
+
+        for (int i = 0, k = 1; i < depthArray.size() && k < depthArray.size(); i++, k++) {
+            runningDepth = depthArray.get(k) + runningDepth;
+            runningDepthTwo = depthArray.get(i) + runningDepthTwo;
+            if (runningDepth >= size || runningDepthTwo >= size) {
+                break;
+            }
+            depthSlopeArray.add((averageArray.get(runningDepth) - averageArray.get(runningDepthTwo)) / runningDepth);
+        }
+
+        if (depth ==1) {
+            depthSlopeArray.add((averageArray.get(averageArray.size() - 1) - averageArray.get(0)) / 2);
+        }
+
+        System.out.println(depthArray);
+        System.out.println(averageArray);
+
+        return depthSlopeArray;
+    }
+
+    public static List<List<Double>> findPennant (File file, List<String> line) {
+        List<List<Double>> pennantArray = new ArrayList<List<Double>>();
+        List<Double> depthSlopeArray = getDepth(file, line, 1);
+        List<List<Double>> rangeArray = findRange(file, line);
+
+
+
+        return pennantArray;
+    }
+
     public static void main(String[] args) throws Exception {
 
         File file = new File("C:\\Users\\david\\OneDrive\\Desktop\\stocks\\newdow.csv");
         List<String> line = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
-        System.out.println(findRange(file, line));
-        System.out.println(findUpDown(file, line));
-        System.out.println(findPivots(file, line));
+
+        System.out.println(getDepth(file, line, 1));
     }
 }
 

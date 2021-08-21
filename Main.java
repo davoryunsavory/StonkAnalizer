@@ -3,9 +3,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.LinkedList;
 
 class Main {
 
+	private static int size = 0;
     public static List<Double> getArray(File file, List<String> line) {
         String[] array = new String[line.size()];
         List<Double> lineArray = new ArrayList<Double>();
@@ -47,29 +51,26 @@ class Main {
         return updownArray;
     }
 
-    public static List<List<Double>> findPivots(File file, List<String> line) {
+    public static Map<Integer, List<Double>> findPivots(File file, List<String> line) {
         List<List<Double>> rangeArray = findRange(file, line);
-        List<List<Double>> pivotArray = new ArrayList<List<Double>>();
         List<String> updownArray = findUpDown(file, line);
-        int size = rangeArray.size() - 1;
+        Map<Integer, List<Double>> pivotMap = new TreeMap<Integer, List<Double>>();
+        size = rangeArray.size() - 1;
 
         for (int i = 0; i < size; i++) {
             if (updownArray.get(i).equals("p") && updownArray.get(i + 1).equals("v")) {
-                pivotArray.add(rangeArray.get(i));
+                pivotMap.put(size + i,rangeArray.get(i));
             } else if (updownArray.get(i).equals("v") && updownArray.get(i + 1).equals("p")) {
-                pivotArray.add(rangeArray.get(i));
+            	pivotMap.put(i,rangeArray.get(i));
             }
         }
 
-        return pivotArray;
+        return pivotMap;
     }
 
-    public static List<Double> getDepth(File file, List<String> line, int depth) {
-        List<Double> depthSlopeArray = new ArrayList<Double>();
-        List<Integer> depthArray = new ArrayList<Integer>();
-        List<List<Double>> rangeArray = findRange(file, line);
-        List<Double> averageArray = new ArrayList<Double>();
-        int size = rangeArray.size();
+    public static List<Integer> getDepth(File file, List<String> line, int depth, List<List<Double>> array) {
+        List<Integer> depthArray = new ArrayList<Integer>();;
+        int size = array.size();
         int constantDepth = depth;
         int running = 0;
         int extra = 0;
@@ -90,47 +91,62 @@ class Main {
             }
 
         }
-        for (int i = 0; i < size; i++) {
-            averageArray.add((rangeArray.get(i).get(0) + rangeArray.get(i).get(1)) / 2);
-        }
-        int runningDepth = 0;
-        int runningDepthTwo = 0;
-
-        for (int i = 0, k = 1; i < depthArray.size() && k < depthArray.size(); i++, k++) {
-            runningDepth = depthArray.get(k) + runningDepth;
-            runningDepthTwo = depthArray.get(i) + runningDepthTwo;
-            if (runningDepth >= size || runningDepthTwo >= size) {
-                break;
-            }
-            depthSlopeArray.add((averageArray.get(runningDepth) - averageArray.get(runningDepthTwo)) / runningDepth);
-        }
-
-        if (depth ==1) {
-            depthSlopeArray.add((averageArray.get(averageArray.size() - 1) - averageArray.get(0)) / 2);
-        }
+        
+        
+        
 
         System.out.println(depthArray);
-        System.out.println(averageArray);
 
-        return depthSlopeArray;
+        return depthArray;
+    }
+    
+    public static List<List<Double>> getPeakSlope (File file, List<String> line) {
+    	List<List<Double>> peakSlopeArray = new ArrayList<List<Double>>();
+    	 Map<Integer, List<Double>> peakMap = findPivots(file,line);
+    	 
+    	 for (int i = 0; i < size*2; i++) {
+    		 if (peakMap.containsKey(i) && i <= size) {
+    			 peakSlopeArray.add(peakMap.get(i));
+    		 }
+    	 }
+    	
+    	return peakSlopeArray;
+    }
+    
+    public static List<Double> getValleySlope (File file, List<String> line) {
+    	List<List<Double>> valleyArray = new ArrayList<List<Double>>();
+    	List<Double> valleySlopeArray = new ArrayList<Double>();
+    	 Map<Integer, List<Double>> peakMap = findPivots(file,line);
+    	 
+    	 for (int i = 0; i < size*2; i++) {
+    		 if (peakMap.containsKey(i) && i >= size) {
+    			 valleyArray.add(peakMap.get(i));
+    		 }
+    	 }
+    	 
+    	 
+    	
+    	return valleySlopeArray;
+    }
+    
+    public static List<Double> makeAverage (File file, List<String> line, List<List<Double>> array) {
+    	
+    	List<Double> madeAverage = new ArrayList<Double>();
+    	
+    	for (int i = 0; i < array.length; i++) {
+    		madeAverage.add((array.get(i).get(0) + array.get(i).get(0)) / 2);
+    	}
+    	
+    	
+    	return madeAverage;
     }
 
-    public static List<List<Double>> findPennant (File file, List<String> line) {
-        List<List<Double>> pennantArray = new ArrayList<List<Double>>();
-        List<Double> depthSlopeArray = getDepth(file, line, 1);
-        List<List<Double>> rangeArray = findRange(file, line);
-
-
-
-        return pennantArray;
-    }
-
+    
     public static void main(String[] args) throws Exception {
 
-        File file = new File("C:\\Users\\david\\OneDrive\\Desktop\\stocks\\newdow.csv");
+        File file = new File("C:\\Users\\FD\\Downloads\\PRPH.csv");
         List<String> line = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
 
-        System.out.println(getDepth(file, line, 1));
     }
 }
 
